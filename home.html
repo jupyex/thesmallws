@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+  <title>The Small Ws</title>
+  <!-- Fonts: Fraunces (serif), Inter (sans), JetBrains Mono (mono) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,700;1,400&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* reset & base */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      background: #1e1712; /* deep coffee-charcoal */
+      color: #f2ebe1; /* bone-white ink */
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 16px 12px 30px;
+    }
+    #app {
+      max-width: 480px;
+      width: 100%;
+      background: #261f19; /* slightly lighter charcoal */
+      border-radius: 36px 36px 28px 28px;
+      padding: 20px 18px 28px;
+      box-shadow: 0 12px 30px rgba(0,0,0,0.7);
+      backdrop-filter: blur(2px);
+      transition: all 0.1s;
+    }
+    /* typography */
+    .serif {
+      font-family: 'Fraunces', serif;
+      font-weight: 700;
+      font-feature-settings: "ss01" on;
+    }
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: -0.02em;
+    }
+    .ui {
+      font-family: 'Inter', sans-serif;
+    }
+    /* header / wordmark */
+    .wordmark {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+      padding: 0 2px;
+    }
+    .wordmark h1 {
+      font-size: 28px;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #f2ebe1 70%, #d4c9b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .streak-chip {
+      background: #322922;
+      padding: 6px 14px 6px 12px;
+      border-radius: 60px;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid #4d3d31;
+      box-shadow: 0 0 12px rgba(255, 180, 60, 0.15);
+    }
+    .streak-chip .flame {
+      font-size: 18px;
+      filter: drop-shadow(0 0 6px #f7b84d);
+    }
+    /* calendar nav */
+    .cal-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 14px 0 12px;
+      padding: 0 4px;
+    }
+    .cal-nav button {
+      background: transparent;
+      border: 1px solid #4d3d31;
+      border-radius: 30px;
+      color: #f2ebe1;
+      font-size: 20px;
+      padding: 4px 14px;
+      cursor: pointer;
+      transition: 0.15s;
+      font-family: 'Inter', sans-serif;
+      font-weight: 400;
+      background: #1e1712;
+    }
+    .cal-nav button:hover {
+      background: #3d3027;
+      border-color: #7a6250;
+    }
+    .cal-nav .month-label {
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      background: #2f261f;
+      padding: 4px 16px;
+      border-radius: 40px;
+      border: 1px solid #3f332a;
+    }
+    /* calendar grid */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px 4px;
+      margin-bottom: 16px;
+    }
+    .cal-day-label {
+      font-size: 12px;
+      text-align: center;
+      color: #b09a87;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      padding: 4px 0;
+      font-family: 'Inter', sans-serif;
+    }
+    .cal-day {
+      aspect-ratio: 1/1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #1e1712;
+      border-radius: 16px;
+      font-size: 17px;
+      font-weight: 500;
+      color: #d4c9b8;
+      border: 1px solid transparent;
+      transition: 0.1s;
+      cursor: pointer;
+      position: relative;
+      box-shadow: inset 0 0 0 0 rgba(255, 200, 100, 0);
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .cal-day.today {
+      border-color: #b78d6b;
+      background: #2f231b;
+      box-shadow: 0 0 12px rgba(200, 150, 100, 0.2);
+    }
+    .cal-day.has-win {
+      background: #2a1f18;
+      border-color: #5f4b3a;
+    }
+    .cal-day .stamp {
+      font-size: 20px;
+      line-height: 1;
+      margin-top: 2px;
+      filter: drop-shadow(0 0 8px rgba(255, 200, 100, 0.3));
+    }
+    .cal-day .stamp.huge {
+      filter: drop-shadow(0 0 14px #ffb347) drop-shadow(0 0 6px #ff9f2e);
+    }
+    .cal-day .stamp.small {
+      filter: drop-shadow(0 0 10px #f7b84d) drop-shadow(0 0 4px #f5a623);
+    }
+    .cal-day .day-number {
+      font-size: 16px;
+      font-weight: 400;
+    }
+    /* + button */
+    .add-btn {
+      background: #3d2e23;
+      border: 1px solid #6b5542;
+      color: #f2ebe1;
+      font-size: 18px;
+      font-weight: 500;
+      padding: 14px 0;
+      border-radius: 80px;
+      width: 100%;
+      margin: 12px 0 16px;
+      cursor: pointer;
+      transition: 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: 0.5px;
+      background: #2c211a;
+    }
+    .add-btn:hover {
+      background: #4d3a2d;
+      border-color: #8a6f58;
+    }
+    /* day view panel */
+    .day-view {
+      background: #1e1712;
+      border-radius: 28px;
+      padding: 14px 16px;
+      margin: 12px 0 6px;
+      border: 1px solid #3d3027;
+    }
+    .day-view .day-title {
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      color: #d4c9b8;
+      margin-bottom: 8px;
+      font-family: 'Fraunces', serif;
+    }
+    .win-entry {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #261f19;
+      padding: 10px 12px;
+      border-radius: 40px;
+      margin-bottom: 8px;
+      border-left: 4px solid #7a6250;
+    }
+    .win-entry .win-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .win-entry .win-cat {
+      background: #3d3027;
+      padding: 2px 12px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 500;
+      color: #d4c9b8;
+      letter-spacing: 0.2px;
+    }
+    .win-entry .win-desc {
+      font-size: 15px;
+      font-weight: 400;
+      word-break: break-word;
+    }
+    .win-entry .win-icon {
+      font-size: 20px;
+    }
+    .win-entry .delete-btn {
+      background: transparent;
+      border: none;
+      color: #b09a87;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0 6px;
+      transition: 0.1s;
+    }
+    .win-entry .delete-btn:hover {
+      color: #f2c4a0;
+      transform: scale(1.1);
+    }
+    /* stats carousel */
+    .stats-section {
+      margin: 18px 0 6px;
+    }
+    .stats-scroll {
+      display: flex;
+      gap: 14px;
+      overflow-x: auto;
+      padding: 8px 4px 14px;
+      scrollbar-width: thin;
+      scrollbar-color: #4d3d31 #1e1712;
+      -webkit-overflow-scrolling: touch;
+    }
+    .stats-scroll::-webkit-scrollbar {
+      height: 4px;
+    }
+    .stats-scroll::-webkit-scrollbar-track {
+      background: #1e1712;
+    }
+    .stats-scroll::-webkit-scrollbar-thumb {
+      background: #4d3d31;
+      border-radius: 12px;
+    }
+    .stat-card {
+      flex: 0 0 auto;
+      background: #1e1712;
+      border: 1px solid #3d3027;
+      border-radius: 48px;
+      padding: 10px 20px 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      white-space: nowrap;
+    }
+    .stat-card .stat-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: #b09a87;
+    }
+    .stat-card .stat-number {
+      font-family: 'Fraunces', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #f2ebe1;
+      line-height: 1;
+    }
+    .stat-total {
+      background: #2f261f;
+      border-color: #6b5542;
+    }
+    /* popup overlay */
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      padding: 20px;
+    }
+    .popup-overlay.active {
+      display: flex;
+    }
+    .popup-box {
+      background: #2a211b;
+      max-width: 400px;
+      width: 100%;
+      border-radius: 48px;
+      padding: 30px 24px 28px;
+      border: 1px solid #5f4b3a;
+      box-shadow: 0 30px 50px rgba(0,0,0,0.8);
+    }
+    .popup-box h2 {
+      font-family: 'Fraunces', serif;
+      font-size: 28px;
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+    .popup-field {
+      margin-bottom: 18px;
+    }
+    .popup-field label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #b09a87;
+      margin-bottom: 4px;
+    }
+    .popup-field select, .popup-field input, .popup-field textarea {
+      width: 100%;
+      padding: 12px 14px;
+      background: #1e1712;
+      border: 1px solid #4d3d31;
+      border-radius: 40px;
+      color: #f2ebe1;
+      font-size: 16px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+    }
+    .popup-field textarea {
+      border-radius: 24px;
+      resize: vertical;
+      min-height: 70px;
+    }
+    .popup-field .toggle-group {
+      display: flex;
+      gap: 8px;
+    }
+    .popup-field .toggle-group button {
+      flex: 1;
+      padding: 10px 0;
+      border-radius: 60px;
+      border: 1px solid #4d3d31;
+      background: #1e1712;
+      color: #b09a87;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: 0.1s;
+    }
+    .popup-field .toggle-group button.active {
+      background: #3d2e23;
+      border-color: #b78d6b;
+      color: #f2ebe1;
+      box-shadow: 0 0 12px rgba(200, 150, 100, 0.2);
+    }
+    .popup-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .popup-actions button {
+      flex: 1;
+      padding: 14px 0;
+      border-radius: 60px;
+      border: none;
+      font-weight: 600;
+      font-size: 17px;
+      cursor: pointer;
+      transition: 0.1s;
+      font-family: 'Inter', sans-serif;
+    }
+    .popup-actions .btn-primary {
+      background: #b78d6b;
+      color: #1e1712;
+    }
+    .popup-actions .btn-primary:hover {
+      background: #d4ae8a;
+    }
+    .popup-actions .btn-secondary {
+      background: transparent;
+      border: 1px solid #4d3d31;
+      color: #b09a87;
+    }
+    .popup-actions .btn-secondary:hover {
+      background: #322922;
+    }
+    .empty-state {
+      color: #7a6250;
+      text-align: center;
+      padding: 16px 0;
+      font-size: 15px;
+    }
+    /* responsive */
+    @media (max-width: 480px) {
+      #app { padding: 16px 12px 20px; }
+      .wordmark h1 { font-size: 24px; }
+    }
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- header -->
+  <div class="wordmark">
+    <h1 class="serif">The Small Ws</h1>
+    <div class="streak-chip" id="streakChip">
+      <span class="flame">🔥</span>
+      <span class="mono" id="streakCount">0</span>
+    </div>
+  </div>
+
+  <!-- calendar navigation -->
+  <div class="cal-nav">
+    <button id="prevMonthBtn">←</button>
+    <span class="month-label mono" id="monthLabel">March 2026</span>
+    <button id="nextMonthBtn">→</button>
+  </div>
+
+  <!-- calendar grid -->
+  <div class="calendar-grid" id="calendarGrid"></div>
+
+  <!-- + add button -->
+  <button class="add-btn" id="addWinBtn"> <span>+</span> a New “W”</button>
+
+  <!-- day view -->
+  <div class="day-view" id="dayView">
+    <div class="day-title"><span id="selectedDayTitle">Select a day</span> <span class="mono" id="dayWinCount"></span></div>
+    <div id="dayEntries"></div>
+  </div>
+
+  <!-- stats -->
+  <div class="stats-section">
+    <div class="stats-scroll" id="statsContainer"></div>
+  </div>
+</div>
+
+<!-- popup overlay -->
+<div class="popup-overlay" id="popupOverlay">
+  <div class="popup-box">
+    <h2 class="serif">New W</h2>
+    <div class="popup-field">
+      <label>Size</label>
+      <div class="toggle-group" id="sizeToggle">
+        <button data-value="small" class="active">small w</button>
+        <button data-value="huge">HUGE W</button>
+      </div>
+    </div>
+    <div class="popup-field">
+      <label>Category</label>
+      <select id="categorySelect">
+        <option value="Career">Career</option>
+        <option value="Health">Health</option>
+        <option value="Relationships">Relationships</option>
+        <option value="Growth">Growth</option>
+        <option value="Fun">Fun</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="popup-field">
+      <label>Description</label>
+      <textarea id="descInput" placeholder="What happened?"></textarea>
+    </div>
+    <div class="popup-actions">
+      <button class="btn-secondary" id="popupCancel">Cancel</button>
+      <button class="btn-primary" id="popupSave">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    // ----- data layer -----
+    let wins = []; // { date: 'YYYY-MM-DD', category, size, description, id }
+    let currentDate = new Date();
+    let selectedDate = new Date(); // for day view
+
+    // DOM refs
+    const grid = document.getElementById('calendarGrid');
+    const monthLabel = document.getElementById('monthLabel');
+    const prevBtn = document.getElementById('prevMonthBtn');
+    const nextBtn = document.getElementById('nextMonthBtn');
+    const dayViewTitle = document.getElementById('selectedDayTitle');
+    const dayEntries = document.getElementById('dayEntries');
+    const dayWinCount = document.getElementById('dayWinCount');
+    const addBtn = document.getElementById('addWinBtn');
+    const popup = document.getElementById('popupOverlay');
+    const popupCancel = document.getElementById('popupCancel');
+    const popupSave = document.getElementById('popupSave');
+    const sizeToggle = document.getElementById('sizeToggle');
+    const categorySelect = document.getElementById('categorySelect');
+    const descInput = document.getElementById('descInput');
+    const streakCount = document.getElementById('streakCount');
+    const statsContainer = document.getElementById('statsContainer');
+
+    // helpers
+    function formatDate(d) {
+      const y = d.getFullYear();
+      const m = String(d.getMonth()+1).padStart(2,'0');
+      const day = String(d.getDate()).padStart(2,'0');
+      return `${y}-${m}-${day}`;
+    }
+
+    function parseDate(str) {
+      const parts = str.split('-').map(Number);
+      return new Date(parts[0], parts[1]-1, parts[2]);
+    }
+
+    function dateToKey(d) { return formatDate(d); }
+
+    function getWinsForDate(dateKey) {
+      return wins.filter(w => w.date === dateKey);
+    }
+
+    // load / save
+    function loadData() {
+      const stored = localStorage.getItem('smallWsData');
+      if (stored) {
+        try { wins = JSON.parse(stored); } catch(e){ wins = []; }
+      } else {
+        // seed some example wins
+        const today = new Date();
+        const y = today.getFullYear();
+        const m = String(today.getMonth()+1).padStart(2,'0');
+        const d = String(today.getDate()).padStart(2,'0');
+        const key = `${y}-${m}-${d}`;
+        wins = [
+          { date: key, category: 'Health', size: 'small', description: 'Walked 20 min', id: Date.now() + 1 },
+          { date: key, category: 'Growth', size: 'huge', description: 'Finished course module', id: Date.now() + 2 },
+        ];
+        // also a past day
+        const past = new Date(today); past.setDate(today.getDate()-2);
+        const yp = past.getFullYear();
+        const mp = String(past.getMonth()+1).padStart(2,'0');
+        const dp = String(past.getDate()).padStart(2,'0');
+        wins.push({ date: `${yp}-${mp}-${dp}`, category: 'Career', size: 'small', description: 'Sent proposal', id: Date.now() + 3 });
+      }
+      saveData();
+    }
+
+    function saveData() {
+      localStorage.setItem('smallWsData', JSON.stringify(wins));
+      renderAll();
+    }
+
+    // ---- render functions ----
+    function renderCalendar() {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month+1, 0);
+      const daysInMonth = lastDay.getDate();
+      const startWeekday = firstDay.getDay(); // 0=Sun
+
+      const todayKey = dateToKey(new Date());
+
+      let html = '';
+      const weekdays = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+      for (let wd of weekdays) {
+        html += `<div class="cal-day-label">${wd}</div>`;
+      }
+
+      for (let i = 0; i < startWeekday; i++) {
+        html += `<div class="cal-day" style="background:transparent;border:none;"></div>`;
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateObj = new Date(year, month, d);
+        const key = formatDate(dateObj);
+        const isToday = key === todayKey;
+        const dayWins = getWinsForDate(key);
+        const hasWin = dayWins.length > 0;
+        let stampHtml = '';
+        let stampClass = '';
+        if (hasWin) {
+          // check if any huge win
+          const hasHuge = dayWins.some(w => w.size === 'huge');
+          const hasSmall = dayWins.some(w => w.size === 'small');
+          let emoji = '✨';
+          if (hasHuge && hasSmall) emoji = '🎉';
+          else if (hasHuge) emoji = '🌟';
+          else if (hasSmall) emoji = '🔥';
+          stampClass = hasHuge ? 'stamp huge' : 'stamp small';
+          stampHtml = `<span class="${stampClass}">${emoji}</span>`;
+        }
+        const todayClass = isToday ? 'today' : '';
+        const winClass = hasWin ? 'has-win' : '';
+        html += `<div class="cal-day ${todayClass} ${winClass}" data-date="${key}" data-day="${d}">
+          <span class="day-number">${d}</span>
+          ${stampHtml}
+        </div>`;
+      }
+
+      grid.innerHTML = html;
+      monthLabel.textContent = `${firstDay.toLocaleString('default', { month: 'long' })} ${year}`;
+
+      // attach click listeners to days
+      document.querySelectorAll('.cal-day[data-date]').forEach(el => {
+        el.addEventListener('click', function() {
+          const dateKey = this.dataset.date;
+          selectedDate = parseDate(dateKey);
+          renderDayView(dateKey);
+          renderCalendar(); // refresh highlight
+        });
+      });
+
+      // highlight selected day
+      if (selectedDate) {
+        const selKey = formatDate(selectedDate);
+        document.querySelectorAll('.cal-day[data-date]').forEach(el => {
+          if (el.dataset.date === selKey) {
+            el.style.borderColor = '#b78d6b';
+            el.style.boxShadow = '0 0 16px rgba(200,150,100,0.25)';
+          } else {
+            el.style.borderColor = '';
+            el.style.boxShadow = '';
+          }
+        });
+      }
+      updateStreak();
+    }
+
+    function renderDayView(dateKey) {
+      const dayWins = getWinsForDate(dateKey);
+      const dateObj = parseDate(dateKey);
+      const title = dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+      dayViewTitle.textContent = title;
+      dayWinCount.textContent = dayWins.length ? `${dayWins.length} wins` : '';
+
+      if (dayWins.length === 0) {
+        dayEntries.innerHTML = `<div class="empty-state">No wins logged yet</div>`;
+        return;
+      }
+
+      let html = '';
+      dayWins.forEach((w, idx) => {
+        const icon = w.size === 'huge' ? '🌟' : '🔥';
+        const cat = w.category || 'Other';
+        html += `<div class="win-entry" data-id="${w.id}">
+          <div class="win-info">
+            <span class="win-icon">${icon}</span>
+            <span class="win-cat">${cat}</span>
+            <span class="win-desc">${w.description || 'Untitled'}</span>
+          </div>
+          <button class="delete-btn" data-id="${w.id}">✕</button>
+        </div>`;
+      });
+      dayEntries.innerHTML = html;
+
+      // delete handlers
+      document.querySelectorAll('.win-entry .delete-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          const id = Number(this.dataset.id);
+          if (confirm('Delete this win?')) {
+            wins = wins.filter(w => w.id !== id);
+            saveData();
+            renderAll();
+          }
+        });
+      });
+    }
+
+    function updateStreak() {
+      // compute consecutive days with at least one win ending today
+      const today = new Date();
+      let streak = 0;
+      let checkDate = new Date(today);
+      while (true) {
+        const key = formatDate(checkDate);
+        const dayWins = getWinsForDate(key);
+        if (dayWins.length > 0) {
+          streak++;
+          checkDate.setDate(checkDate.getDate() - 1);
+        } else {
+          break;
+        }
+      }
+      streakCount.textContent = streak;
+    }
+
+    function renderStats() {
+      const categoryMap = {};
+      let total = 0;
+      wins.forEach(w => {
+        const cat = w.category || 'Other';
+        categoryMap[cat] = (categoryMap[cat] || 0) + 1;
+        total++;
+      });
+      let html = '';
+      const sorted = Object.entries(categoryMap).sort((a,b) => b[1]-a[1]);
+      sorted.forEach(([cat, count]) => {
+        html += `<div class="stat-card"><span class="stat-label">${cat}</span><span class="stat-number">${count}</span></div>`;
+      });
+      html += `<div class="stat-card stat-total"><span class="stat-label">Total</span><span class="stat-number">${total}</span></div>`;
+      statsContainer.innerHTML = html;
+    }
+
+    function renderAll() {
+      renderCalendar();
+      if (selectedDate) {
+        renderDayView(formatDate(selectedDate));
+      } else {
+        const today = new Date();
+        selectedDate = today;
+        renderDayView(formatDate(today));
+      }
+      renderStats();
+      updateStreak();
+    }
+
+    // ---- popup logic ----
+    let selectedSize = 'small';
+    sizeToggle.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', function() {
+        sizeToggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        selectedSize = this.dataset.value;
+      });
+    });
+
+    function openPopup() {
+      popup.classList.add('active');
+      descInput.value = '';
+      categorySelect.value = 'Career';
+      // reset size to small
+      sizeToggle.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+      sizeToggle.querySelector('[data-value="small"]').classList.add('active');
+      selectedSize = 'small';
+    }
+
+    function closePopup() {
+      popup.classList.remove('active');
+    }
+
+    addBtn.addEventListener('click', function() {
+      if (!selectedDate) {
+        selectedDate = new Date();
+      }
+      openPopup();
+    });
+
+    popupCancel.addEventListener('click', closePopup);
+    popup.addEventListener('click', function(e) {
+      if (e.target === this) closePopup();
+    });
+
+    popupSave.addEventListener('click', function() {
+      const desc = descInput.value.trim();
+      if (!desc) { alert('Please add a description'); return; }
+      const category = categorySelect.value;
+      const size = selectedSize;
+      const dateKey = formatDate(selectedDate);
+      const newWin = {
+        date: dateKey,
+        category: category,
+        size: size,
+        description: desc,
+        id: Date.now() + Math.random()
+      };
+      wins.push(newWin);
+      saveData();
+      closePopup();
+      renderAll();
+    });
+
+    // nav
+    prevBtn.addEventListener('click', function() {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      renderCalendar();
+    });
+    nextBtn.addEventListener('click', function() {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      renderCalendar();
+    });
+
+    // init
+    loadData();
+    // set selected to today
+    const today = new Date();
+    selectedDate = today;
+    renderAll();
+  })();
+</script>
+</body>
+</html>
